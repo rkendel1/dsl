@@ -32,11 +32,13 @@ function RootLayoutNav() {
     try {
       await ExpoSplashScreen.hideAsync();
     } catch (error) {
-      // Splash screen may already be hidden, log but continue
-      console.log('Splash screen hide error (non-critical):', error);
+      // Splash screen already hidden or hide operation failed (safe to ignore)
+      console.log('Splash screen already hidden or hide operation failed (safe to ignore):', error);
     }
 
     try {
+      // NOTE: firstLaunch flag is set to 'false' in OnboardingScreen when user completes onboarding.
+      // If user hasn't completed onboarding yet, they will see it again on next launch.
       const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
       if (firstLaunch) {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
