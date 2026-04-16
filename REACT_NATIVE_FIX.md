@@ -1,174 +1,202 @@
-# React Native Compatibility Fix
+# React Native Setup for StackLive DSL
 
-## Problem
+## Purpose
 
-React Native doesn't work well with the `runFlow` function from `@stacklive/sdk`. This causes issues when trying to execute DSL flows in a React Native environment.
+This is a **REFERENCE IMPLEMENTATION** showing how to properly use the StackLive DSL in a React Native environment. The DSL provides type safety, composition, and a clean abstraction layer.
 
-## Solution
+## The Challenge
 
-Instead of using `runFlow`, we make direct HTTP API calls to the StackLive backend using the native `fetch` API, which is fully supported in React Native.
+The `@stacklive/sdk` uses `node-forge` for cryptography, which requires Node.js APIs not available in React Native by default.
 
-## Changes Made
+## The Solution
 
-### 1. Created API Configuration (`app/config/api.ts`)
+Use React Native polyfills to provide the necessary Node.js APIs. This allows the DSL to work seamlessly in React Native while maintaining all its benefits.
 
-```typescript
-export const API_CONFIG = {
-  BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'https://api.stacklive.app',
-  ENDPOINTS: {
-    AUTH_SIGNUP: '/api/auth/signup',
-    AUTH_LOGIN: '/api/auth/login',
-    AUTH_USER_SIGNUP: '/api/auth/user-signup',
-    MINIAPPS_LIST: '/api/miniapps',
-    USER_PROFILE: '/api/users/profile',
-    USER_FAVORITES: '/api/users/favorites',
-  },
-  TIMEOUT: 30000,
-};
+## Setup
+
+### 1. Install Required Dependencies
+
+```bash
+npm install react-native-get-random-values process
 ```
 
-### 2. Created Helper Function for API Requests
+### 2. Create Polyfills File (`app/polyfills.ts`)
 
 ```typescript
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<{ success: boolean; data?: T; error?: string }>
+import 'react-native-get-random-values';
+
+if (typeof global.process === 'undefined') {
+  global.process = require('process');
+}
+
+if (global.process && global.process.env) {
+  global.process.env.SDK_MODE = 'true';
+  global.process.env.NODE_ENV = __DEV__ ? 'development' : 'production';
+}
 ```
 
-This helper:
-- Handles timeouts
-- Provides consistent error handling
-- Returns a standard response format
-- Works perfectly in React Native
+### 3. Import Polyfills FIRST in App Entry Point
 
-### 3. Updated `app/services/api.ts`
+In `app/_layout.tsx`:
 
-**Before (using runFlow):**
+```typescript
+// Import polyfills FIRST - before any other imports
+import './polyfills';
+
+// Then import everything else
+import { Stack } from 'expo-router';
+// ... rest of imports
+```
+
+## Using the DSL
+
+Now you can use the DSL as intended:
+
+### User Signup Example
+
 ```typescript
 import { runFlow } from '@stacklive/sdk';
+import { userSignUpFlow } from '../flows/auth';
 
 export async function createUser(email: string, password: string) {
+  // Build the DSL flow
   const flowAST = userSignUpFlow(email, password);
-  const result = await runFlow(flowAST); // ❌ Doesn't work in React Native
-  // ...
+  
+  // Execute the flow
+  const result = await runFlow(flowAST);
+  
+  if (result.execution.status === 'success') {
+    const userId = result.execution.results['signup']?.output?.userId;
+    return { success: true, userId };
+  }
+  
+  return { success: false, error: 'Signup failed' };
 }
 ```
 
-**After (using fetch):**
+### User Login Example
+
 ```typescript
-import { apiRequest, API_CONFIG } from '../config/api';
+import { runFlow } from '@stacklive/sdk';
+import { userLoginFlow } from '../flows/auth';
 
-export async function createUser(email: string, password: string) {
-  const result = await apiRequest<{ userId: string }>(
-    API_CONFIG.ENDPOINTS.AUTH_USER_SIGNUP,
-    {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }
-  ); // ✅ Works in React Native
-  // ...
+export async function authenticateUser(email: string, password: string) {
+  // Build the DSL flow
+  const flowAST = userLoginFlow(email, password);
+  
+  // Execute the flow
+  const result = await runFlow(flowAST);
+  
+  if (result.execution.status === 'success') {
+    const userId = result.execution.results['login']?.output?.userId;
+    return { success: true, userId };
+  }
+  
+  return { success: false, error: 'Login failed' };
 }
 ```
 
-## API Endpoints
+## DSL Flow Definitions
 
-The following endpoints are called directly:
+Flows are defined using the DSL builder pattern:
 
-### Authentication
+```typescript
+import { flow, submit, request } from '@stacklive/sdk';
 
-1. **User Signup**
-   - Endpoint: `POST /api/auth/user-signup`
-   - Body: `{ email, password }`
-   - Response: `{ userId, supabaseUserId? }`
-   - Maps to DSL: `submit('auth')` → `auth.userSignUp`
+// Signup flow
+export const userSignUpFlow = (email: string, password: string) =>
+  flow('user-signup')
+    .step(submit('auth', {
+      id: 'signup',
+      input: { email, password }
+    }))
+    .build();
 
-2. **User Login**
-   - Endpoint: `POST /api/auth/login`
-   - Body: `{ email, password, actorType }`
-   - Response: `{ userId, token? }`
-   - Maps to DSL: `request('auth')` → `auth.authenticate`
+// Login flow
+export const userLoginFlow = (email: string, password: string) =>
+  flow('user-login')
+    .step(request('auth', {
+      id: 'login',
+      input: {
+        body: { email, password },
+        actorType: 'user'
+      }
+    }))
+    .build();
+```
 
-### Mini Apps
+## Benefits of Using the DSL
 
-3. **List Mini Apps**
-   - Endpoint: `GET /api/miniapps`
-   - Response: `{ apps: MiniApp[] }`
-   - Maps to DSL: `list('miniapps')`
+✅ **Type Safety**: Input/output contracts are type-checked  
+✅ **Composition**: Chain multiple capabilities together  
+✅ **Testability**: Mock and simulate flows in tests  
+✅ **Abstraction**: Hide backend implementation details  
+✅ **Documentation**: Flows are self-documenting  
+✅ **Consistency**: Same patterns across platforms  
+
+## Why Not Plain HTTP Calls?
+
+Plain HTTP calls would bypass all DSL benefits:
+
+❌ No type safety  
+❌ No composition  
+❌ No testability  
+❌ Tight coupling to backend  
+❌ Not a reference implementation  
 
 ## Configuration
 
-### Environment Variables
+### Environment Variables (Optional)
 
-Create a `.env` file with:
+Create `.env` file:
 
 ```bash
+# For development with real backend
 EXPO_PUBLIC_API_URL=https://api.stacklive.app
-```
 
-For local development:
-
-```bash
+# For local development
 EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
 
-### Backend Requirements
-
-Your StackLive backend must expose these REST API endpoints that correspond to the DSL capabilities:
-
-- `POST /api/auth/user-signup` → Calls `auth.userSignUp` capability
-- `POST /api/auth/login` → Calls `auth.authenticate` capability
-- `GET /api/miniapps` → Calls `miniapps.list` capability
-
-## Benefits
-
-✅ **React Native Compatible**: Uses native fetch API  
-✅ **No runFlow Issues**: Bypasses DSL runtime execution  
-✅ **Proper Error Handling**: Consistent error format  
-✅ **Timeout Support**: Prevents hanging requests  
-✅ **Environment Configuration**: Easy to switch between dev/staging/prod  
-✅ **Type Safe**: TypeScript generics for responses  
-
-## DSL Flows Still Available
-
-The DSL flow definitions in `app/flows/auth.ts` are still maintained for documentation and potential future use, but they're not executed via `runFlow` in the React Native app. Instead, we make direct API calls that invoke the same backend capabilities.
-
-## Migration Notes
-
-If you were using `runFlow` before:
-
-1. ✅ Flow definitions kept for reference
-2. ✅ Same auth capabilities called on backend
-3. ✅ Same input/output contracts
-4. ✅ Just uses HTTP instead of `runFlow`
+The SDK will use these for capability execution when connected to a real backend.
 
 ## Testing
 
 ```bash
-# Test that API calls work
+# Start the app
 npm start
 
-# In the app, try:
+# Test authentication flows
 # - Sign up a new user
-# - Log in
+# - Log in with credentials
 # - View mini apps list
-```
 
-All operations now use direct HTTP calls instead of `runFlow`.
+# All operations use the DSL via runFlow()
+```
 
 ## Troubleshooting
 
-### "Network request failed"
-- Check `EXPO_PUBLIC_API_URL` environment variable
-- Verify backend is running and accessible
-- Check network connectivity
+### "Cannot find module 'crypto'"
+- ✅ Make sure `import './polyfills'` is the FIRST import in `_layout.tsx`
+- ✅ Verify `react-native-get-random-values` is installed
 
-### "Request timeout"
-- Backend might be slow or down
-- Check `API_CONFIG.TIMEOUT` setting
-- Verify backend endpoints are responding
+### "process is not defined"
+- ✅ Make sure `process` package is installed
+- ✅ Check polyfills.ts is setting up global.process
 
-### "HTTP 404" or "HTTP 500"
-- Verify backend endpoints match configuration
-- Check backend logs for errors
-- Ensure capabilities are registered in backend
+### "node-forge" errors
+- ✅ Polyfills must be imported before SDK
+- ✅ Clear Metro bundler cache: `npx expo start -c`
+
+## Summary
+
+This app demonstrates the **correct way** to use the StackLive DSL in React Native:
+
+1. ✅ Install polyfill dependencies
+2. ✅ Import polyfills first in app entry
+3. ✅ Define flows using DSL builders
+4. ✅ Execute flows with `runFlow()`
+5. ✅ Handle results with type safety
+
+This is the reference implementation other developers should follow.
+
