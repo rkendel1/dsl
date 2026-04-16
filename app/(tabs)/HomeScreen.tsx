@@ -3,7 +3,7 @@
  * @description Main home screen with featured carousel and app sections
  */
 
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,36 +12,32 @@ import {
   TouchableOpacity,
   RefreshControl,
   FlatList,
-  Dimensions,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useRouter } from 'expo-router';
 import { useApp } from '../contexts/AppContext';
 import AppCard from '../../components/AppCard';
-import type { TabParamList } from './types';
 import { MiniApp } from '../types';
 
-const { width } = Dimensions.get('window');
-
-type HomeScreenNavigationProp = BottomTabNavigationProp<TabParamList, 'Home'>;
-
 export default function HomeScreen() {
-  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const router = useRouter();
   const { featuredApps, newThisWeekApps, loading, refreshApps } = useApp();
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const handleAppPress = (app: MiniApp) => {
     // Navigate to app detail screen
-    (navigation.getParent() as any)?.navigate('AppDetail', { app });
+    router.push({
+      pathname: '/AppDetailScreen',
+      params: { appId: app.id }
+    });
   };
 
   const handleSeeAll = (section: string) => {
-    navigation.navigate('Trending');
+    router.push('/TrendingScreen');
   };
 
   const handleProfilePress = () => {
-    (navigation.getParent() as any)?.navigate('Profile');
+    router.push('/ProfileScreen');
   };
 
   return (
