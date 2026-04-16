@@ -7,8 +7,10 @@ import { flow, op, request, runFlow } from '@stacklive/sdk';
 
 /**
  * Test that SDK functions are accessible and can be called
+ * This is a simple integration test to verify the @stacklive/sdk package
+ * can be imported and used correctly in the React Native environment.
  */
-export function testSDKIntegration() {
+export function verifySDKIntegration() {
   console.log('Testing @stacklive/sdk integration...');
   
   // Test 1: Check that flow function is available
@@ -59,4 +61,4 @@ export function testSDKIntegration() {
   return true;
 }
 
-export default testSDKIntegration;
+export default verifySDKIntegration;

@@ -10,7 +10,10 @@ try {
   // Try to dynamically import the ESM package
   import('@stacklive/sdk').then((sdk) => {
     console.log('✅ Successfully imported @stacklive/sdk');
-    console.log('✅ Available exports:', Object.keys(sdk).slice(0, 10).join(', '), '...');
+    const exports = Object.keys(sdk);
+    const displayExports = exports.slice(0, 10);
+    const hasMore = exports.length > 10;
+    console.log('✅ Available exports:', displayExports.join(', ') + (hasMore ? '...' : ''));
     
     // Test that the main exports are available
     const requiredExports = ['runFlow', 'flow', 'op', 'request', 'intent'];
