@@ -3,36 +3,16 @@
  */
 
 import('@stacklive/sdk').then((sdk) => {
-  const { flow, op, request } = sdk;
+  const { flow, request, submit } = sdk;
   
   console.log('Testing flow creation...\n');
   
-  // Test 1: Create user flow
+  // Test 1: User signup flow using submit('auth') alias
   try {
-    const createUserFlow = flow('user-create')
+    const userSignUpFlow = flow('user-signup')
       .step(
-        op('users.create', {
-          id: 'create-user',
-          input: {
-            email: 'test@example.com',
-            password: 'password123',
-            roleIds: ['role_user'],
-          },
-        })
-      )
-      .build();
-    console.log('✅ Create user flow:', createUserFlow.id);
-  } catch (error) {
-    console.error('❌ Failed to create user flow:', error.message);
-    process.exit(1);
-  }
-  
-  // Test 2: Sign up user flow
-  try {
-    const signUpUserFlow = flow('user-signup')
-      .step(
-        request('auth.signUpUser', {
-          id: 'register',
+        submit('auth', {
+          id: 'signup',
           input: {
             email: 'test@example.com',
             password: 'password123',
@@ -40,28 +20,31 @@ import('@stacklive/sdk').then((sdk) => {
         })
       )
       .build();
-    console.log('✅ Sign up user flow:', signUpUserFlow.id);
+    console.log('✅ User signup flow:', userSignUpFlow.id);
   } catch (error) {
-    console.error('❌ Failed to create sign up flow:', error.message);
+    console.error('❌ Failed to create user signup flow:', error.message);
     process.exit(1);
   }
   
-  // Test 3: Credentials login flow
+  // Test 2: User login flow using request('auth') alias
   try {
-    const credentialsLoginFlow = flow('credentials-login')
+    const userLoginFlow = flow('user-login')
       .step(
-        request('auth.credentialsLogin', {
+        request('auth', {
           id: 'login',
           input: {
-            email: 'test@example.com',
-            password: 'password123',
+            body: {
+              email: 'test@example.com',
+              password: 'password123',
+            },
+            actorType: 'user',
           },
         })
       )
       .build();
-    console.log('✅ Credentials login flow:', credentialsLoginFlow.id);
+    console.log('✅ User login flow:', userLoginFlow.id);
   } catch (error) {
-    console.error('❌ Failed to create credentials login flow:', error.message);
+    console.error('❌ Failed to create user login flow:', error.message);
     process.exit(1);
   }
   

@@ -22,7 +22,6 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  skipLogin: () => Promise<{ success: boolean }>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -108,18 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: false, error: result.error };
   };
 
-  const skipLogin = async () => {
-    const dummyToken = 'skip-token';
-    const dummyUserId = 'skip-user';
-    await saveUserToken(dummyToken);
-    await saveUserId(dummyUserId);
-    setUserToken(dummyToken);
-    setUserId(dummyUserId);
-    setUserProfile({ id: dummyUserId, email: 'skip@example.com', username: 'Skip User', favoriteApps: [] });
-    setLoading(false);
-    return { success: true };
-  };
-
   const logout = async () => {
     await removeUserToken();
     await removeUserId();
@@ -138,7 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         signup,
-        skipLogin,
         logout,
         refreshProfile,
       }}

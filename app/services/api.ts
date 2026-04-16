@@ -4,8 +4,8 @@
  */
 import { flow, list, runFlow } from '@stacklive/sdk';
 import {
-  createUserFlow,
-  credentialsLoginFlow,
+  userSignUpFlow,
+  userLoginFlow,
 } from '../flows';
 import { MiniApp } from '../types';
 
@@ -68,16 +68,18 @@ import { MiniApp } from '../types';
   
   /**
    * Create new user using DSL flow
+   * Uses auth.userSignUp for end-user self-registration
    */
   export async function createUser(email: string, password: string): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
-      const flowAST = createUserFlow(email, password);
+      const flowAST = userSignUpFlow(email, password);
       const result = await runFlow(flowAST);
       
       // Extract userId from the flow execution result
       if (result.execution.status === 'success') {
-        const createUserStep = result.execution.results['create-user'];
-        const userId = createUserStep?.output?.userId as string | undefined;
+        const signupStep = result.execution.results['signup'];
+        const userId = signupStep?.output?.userId as string | undefined;
+        const supabaseUserId = signupStep?.output?.supabaseUserId as string | undefined;
         
         if (!userId) {
           console.error('User creation succeeded but no userId returned');
@@ -89,7 +91,7 @@ import { MiniApp } from '../types';
         
         return { 
           success: true, 
-          userId 
+          userId: userId || supabaseUserId
         };
       } else {
         // Get error from the first failed step
@@ -101,36 +103,38 @@ import { MiniApp } from '../types';
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      // Fallback to mock for development when backend is not available
       return { 
-        success: true, 
-        userId: `mock-user-${Date.now()}` 
+        success: false, 
+        error: error instanceof Error ? error.message : 'User creation failed'
       };
     }
   }
   
   /**
    * Authenticate user using DSL flow
-   * Uses credentialsLogin flow for session-based authentication
+   * Uses auth.authenticate for simple authentication without session binding
    */
   export async function authenticateUser(email: string, password: string): Promise<{ success: boolean; token?: string; userId?: string; error?: string }> {
     try {
-      // Use credentials login flow (session-bound authentication)
-      const flowAST = credentialsLoginFlow(email, password);
+      // Use simple authentication flow
+      const flowAST = userLoginFlow(email, password);
       const result = await runFlow(flowAST);
       
       if (result.execution.status === 'success') {
         const loginStep = result.execution.results['login'];
         const userId = loginStep?.output?.userId as string | undefined;
-        const token = (loginStep?.output?.token || loginStep?.output?.sessionToken) as string | undefined;
         
-        if (!userId || !token) {
-          console.error('Authentication succeeded but missing userId or token');
+        if (!userId) {
+          console.error('Authentication succeeded but missing userId');
           return { 
             success: false, 
             error: 'Authentication failed: incomplete credentials' 
           };
         }
+        
+        // Generate a simple token for this session
+        // In production, this would come from the backend
+        const token = `token-${userId}-${Date.now()}`;
         
         return { 
           success: true, 
@@ -147,16 +151,10 @@ import { MiniApp } from '../types';
       }
     } catch (error) {
       console.error('Error authenticating user:', error);
-      // Fallback to mock for development when backend is not available
-      if (email && password) {
-        return { 
-          success: true, 
-          token: `mock-token-${Date.now()}`,
-          userId: `mock-user-${Date.now()}`
-        };
-      } else {
-        return { success: false, error: 'Invalid credentials' };
-      }
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Authentication failed'
+      };
     }
   }
   
