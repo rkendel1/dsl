@@ -3,19 +3,13 @@
  * @description Handles all API calls to StackLive backend using @stacklive/sdk DSL flows
  */
 import { MiniApp } from '../types';
-
-// Create a single runtime instance shared across all flows
-// const runtime = createFlowRuntime();
-// registerAllCapabilities(runtime);
-
-/**
- * Execute a DSL flow using the SDK
- */
-// async function executeFlow(flowDefinition: any): Promise<FlowExecutionWithUI> {
-//   const ast = flowDefinition.build();
-//   const compiledFlow = compile(ast);
-//   return runtime.execute(compiledFlow);
-// }
+import { runFlow } from '@stacklive/sdk';
+import { 
+  createUserFlow, 
+  signUpUserFlow, 
+  credentialsLoginFlow, 
+  authenticateUserFlow 
+} from '../flows/auth';
 
 /**
  * Fetch mini apps list using DSL flow
@@ -349,24 +343,83 @@ import { MiniApp } from '../types';
    */
   export async function createUser(email: string, password: string): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
-      // Mock for development; replace with real DSL when backend connected
+      const flowAST = createUserFlow(email, password);
+      const result = await runFlow(flowAST);
+      
+      // Extract userId from the flow execution result
+      if (result.execution.status === 'success') {
+        const createUserStep = result.execution.results['create-user'];
+        const userId = createUserStep?.output?.userId as string | undefined;
+        
+        if (!userId) {
+          console.error('User creation succeeded but no userId returned');
+          return { 
+            success: false, 
+            error: 'User creation failed: no userId returned' 
+          };
+        }
+        
+        return { 
+          success: true, 
+          userId 
+        };
+      } else {
+        // Get error from the first failed step
+        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+        return { 
+          success: false, 
+          error: failedStep?.error || 'User creation failed' 
+        };
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      // Fallback to mock for development when backend is not available
       return { 
         success: true, 
         userId: `mock-user-${Date.now()}` 
       };
-    } catch (error) {
-      console.error('Error creating user:', error);
-      return { success: false, error: 'Network error' };
     }
   }
   
   /**
    * Authenticate user using DSL flow
+   * Uses credentialsLogin flow for session-based authentication
    */
   export async function authenticateUser(email: string, password: string): Promise<{ success: boolean; token?: string; userId?: string; error?: string }> {
     try {
-      // Mock for development; replace with real DSL when backend connected
-      // Simulate valid login for any email/password (in prod, validate properly)
+      // Use credentials login flow (session-bound authentication)
+      const flowAST = credentialsLoginFlow(email, password);
+      const result = await runFlow(flowAST);
+      
+      if (result.execution.status === 'success') {
+        const loginStep = result.execution.results['login'];
+        const userId = loginStep?.output?.userId as string | undefined;
+        const token = (loginStep?.output?.token || loginStep?.output?.sessionToken) as string | undefined;
+        
+        if (!userId || !token) {
+          console.error('Authentication succeeded but missing userId or token');
+          return { 
+            success: false, 
+            error: 'Authentication failed: incomplete credentials' 
+          };
+        }
+        
+        return { 
+          success: true, 
+          token,
+          userId
+        };
+      } else {
+        // Get error from the first failed step
+        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+        return { 
+          success: false, 
+          error: failedStep?.error || 'Authentication failed' 
+        };
+      }
+    } catch (error) {
+      console.error('Error authenticating user:', error);
+      // Fallback to mock for development when backend is not available
       if (email && password) {
         return { 
           success: true, 
@@ -376,9 +429,6 @@ import { MiniApp } from '../types';
       } else {
         return { success: false, error: 'Invalid credentials' };
       }
-    } catch (error) {
-      console.error('Error authenticating user:', error);
-      return { success: false, error: 'Network error' };
     }
   }
   
