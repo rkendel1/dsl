@@ -1,24 +1,82 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+/**
+ * @file App.tsx
+ * @description StackLive Native Mobile App - Mini App Store
+ */
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import * as ExpoSplashScreen from 'expo-splash-screen';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AppProvider } from './contexts/AppContext';
+import CustomSplashScreen from './SplashScreen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import OnboardingScreen from './OnboardingScreen';
+import AuthScreen from './AuthScreen';
+import AppDetailScreen from './AppDetailScreen';
+import AppWebViewScreen from './AppWebViewScreen';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+function RootLayoutNav() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+  const [firstLaunch, setFirstLaunch] = useState(true);
+  const [checked, setChecked] = useState(false);
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    ExpoSplashScreen.preventAutoHideAsync();
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    const checkAndRoute = async () => {
+      setChecked(true);
+      await ExpoSplashScreen.hideAsync();
+
+      try {
+        const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
+        if (firstLaunch) {
+          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+          router.replace({ pathname: '/OnboardingScreen' });
+          await AsyncStorage.setItem('firstLaunch', 'false');
+        } else if (!isAuthenticated) {
+          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+          router.replace({ pathname: '/AuthScreen' });
+        } else {
+          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+          router.replace({ pathname: '/(tabs)' });
+        }
+      } catch (error) {
+        console.error('Error checking first launch:', error);
+        // Fallback to tabs
+        // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+        router.replace({ pathname: '/(tabs)' });
+      }
+    };
+    checkAndRoute();
+  }, [loading, isAuthenticated]);
+  if (loading || !checked) {
+    return <CustomSplashScreen />;
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="OnboardingScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="AuthScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="AppDetailScreen" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="AppWebViewScreen" options={{ presentation: 'modal' }} />
+    </Stack>
+  );
+}
+
+export default function Layout() {
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppProvider>
+          <RootLayoutNav />
+        </AppProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

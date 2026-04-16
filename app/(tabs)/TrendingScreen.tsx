@@ -1,0 +1,80 @@
+/**
+ * @file Trending Screen
+ * @description Shows trending and popular apps
+ */
+
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useApp } from '../contexts/AppContext';
+import AppCard from '../../components/AppCard';
+import { MiniApp } from '../types';
+
+export default function TrendingScreen() {
+  const navigation = useNavigation();
+  const { trendingApps, loading, refreshApps } = useApp();
+
+  const handleAppPress = (app: MiniApp) => {
+    (navigation.getParent() as any)?.navigate('AppDetail', { app });
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Trending</Text>
+      </View>
+
+      <FlatList
+        data={trendingApps}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <AppCard app={item} onPress={() => handleAppPress(item)} variant="list" />
+        )}
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refreshApps} />
+        }
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>No trending apps yet</Text>
+          </View>
+        }
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1F2937',
+  },
+  list: {
+    padding: 20,
+  },
+  empty: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#9CA3AF',
+  },
+});
