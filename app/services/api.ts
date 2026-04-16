@@ -1,47 +1,31 @@
 /**
  * @file API Service
- * @description Handles all API calls to StackLive backend using @stacklive/sdk DSL flows
+ * @description Handles all API calls to StackLive backend using direct HTTP requests
+ * Note: React Native doesn't work well with runFlow, so we use fetch instead
  */
-import { flow, list, runFlow } from '@stacklive/sdk';
-import {
-  userSignUpFlow,
-  userLoginFlow,
-} from '../flows';
+import { API_CONFIG, apiRequest } from '../config/api';
 import { MiniApp } from '../types';
 
 /**
- * Fetch mini apps list using DSL flow
- * Following the recommended pattern from SDK examples
+ * Fetch mini apps list using direct API call
+ * Uses fetch instead of runFlow for React Native compatibility
  */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
     try {
-      // Use the DSL flow to fetch mini apps (inline pattern as recommended)
-      const result = await runFlow(
-        flow('miniapps-list')
-          .step(list('miniapps', { id: 'list-apps' }))
-          .build()
+      const result = await apiRequest<{ apps: MiniApp[] }>(
+        API_CONFIG.ENDPOINTS.MINIAPPS_LIST,
+        { method: 'GET' }
       );
       
-      if (result.execution.status === 'success') {
-        // Extract apps from the flow execution result
-        const listAppsStep = result.execution.results['list-apps'];
-        const apps = listAppsStep?.output?.apps as MiniApp[] | undefined;
-        
-        if (!apps) {
-          console.error('Mini apps list succeeded but no apps returned');
-          return [];
-        }
-        
-        return apps;
-      } else {
-        // Get error from the first failed step
-        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
-        console.error('Failed to fetch mini apps:', failedStep?.error || 'Unknown error');
-        return [];
+      if (result.success && result.data?.apps) {
+        return result.data.apps;
       }
+      
+      console.error('Failed to fetch mini apps:', result.error);
+      return [];
     } catch (error) {
       console.error('Error fetching mini apps:', error);
-      throw error;
+      return [];
     }
   }
   
@@ -67,93 +51,74 @@ import { MiniApp } from '../types';
   }
   
   /**
-   * Create new user using DSL flow
-   * Uses auth.userSignUp for end-user self-registration
+   * Create new user using direct API call
+   * Calls auth.userSignUp endpoint directly instead of using DSL runFlow
    */
   export async function createUser(email: string, password: string): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
-      const flowAST = userSignUpFlow(email, password);
-      const result = await runFlow(flowAST);
-      
-      // Extract userId from the flow execution result
-      if (result.execution.status === 'success') {
-        const signupStep = result.execution.results['signup'];
-        const userId = signupStep?.output?.userId as string | undefined;
-        const supabaseUserId = signupStep?.output?.supabaseUserId as string | undefined;
-        
-        if (!userId) {
-          console.error('User creation succeeded but no userId returned');
-          return { 
-            success: false, 
-            error: 'User creation failed: no userId returned' 
-          };
+      const result = await apiRequest<{ userId: string; supabaseUserId?: string }>(
+        API_CONFIG.ENDPOINTS.AUTH_USER_SIGNUP,
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
         }
-        
-        return { 
-          success: true, 
-          userId: userId || supabaseUserId
-        };
-      } else {
-        // Get error from the first failed step
-        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
-        return { 
-          success: false, 
-          error: failedStep?.error || 'User creation failed' 
+      );
+      
+      if (result.success && result.data) {
+        return {
+          success: true,
+          userId: result.data.userId || result.data.supabaseUserId,
         };
       }
+      
+      return {
+        success: false,
+        error: result.error || 'User creation failed',
+      };
     } catch (error) {
       console.error('Error creating user:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'User creation failed'
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'User creation failed',
       };
     }
   }
   
   /**
-   * Authenticate user using DSL flow
-   * Uses auth.authenticate for simple authentication without session binding
+   * Authenticate user using direct API call
+   * Calls auth.authenticate endpoint directly instead of using DSL runFlow
    */
   export async function authenticateUser(email: string, password: string): Promise<{ success: boolean; token?: string; userId?: string; error?: string }> {
     try {
-      // Use simple authentication flow
-      const flowAST = userLoginFlow(email, password);
-      const result = await runFlow(flowAST);
-      
-      if (result.execution.status === 'success') {
-        const loginStep = result.execution.results['login'];
-        const userId = loginStep?.output?.userId as string | undefined;
-        
-        if (!userId) {
-          console.error('Authentication succeeded but missing userId');
-          return { 
-            success: false, 
-            error: 'Authentication failed: incomplete credentials' 
-          };
+      const result = await apiRequest<{ userId: string; token?: string }>(
+        API_CONFIG.ENDPOINTS.AUTH_LOGIN,
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password, actorType: 'user' }),
         }
+      );
+      
+      if (result.success && result.data) {
+        const userId = result.data.userId;
+        // Generate a session token if not provided by backend
+        const token = result.data.token || `token-${userId}-${Date.now()}`;
         
-        // Generate a simple token for this session
-        // In production, this would come from the backend
-        const token = `token-${userId}-${Date.now()}`;
-        
-        return { 
-          success: true, 
+        return {
+          success: true,
           token,
-          userId
-        };
-      } else {
-        // Get error from the first failed step
-        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
-        return { 
-          success: false, 
-          error: failedStep?.error || 'Authentication failed' 
+          userId,
         };
       }
+      
+      return {
+        success: false,
+        error: result.error || 'Authentication failed',
+      };
     } catch (error) {
       console.error('Error authenticating user:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Authentication failed'
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Authentication failed',
       };
     }
   }
