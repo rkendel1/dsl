@@ -44,7 +44,8 @@ export default function AuthScreen() {
         : await login(email, password);
 
       if (result.success) {
-        router.replace('/');
+        // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+        router.replace({ pathname: '/(tabs)' });
       } else {
         Alert.alert('Error', result.error || 'Authentication failed');
       }
@@ -57,7 +58,8 @@ export default function AuthScreen() {
 
   const handleSkip = async () => {
     await skipLogin();
-    router.replace('/');
+    // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+    router.replace({ pathname: '/(tabs)' });
   };
 
   return (
