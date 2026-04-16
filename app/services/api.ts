@@ -12,20 +12,6 @@ import {
 } from '../flows/auth';
 
 /**
- * Execute a DSL flow using the SDK
- * This wrapper handles flow execution and extracts results
- */
-async function executeFlow(flowAST: any): Promise<any> {
-  try {
-    const result = await runFlow(flowAST);
-    return result;
-  } catch (error) {
-    console.error('Flow execution error:', error);
-    throw error;
-  }
-}
-
-/**
  * Fetch mini apps list using DSL flow
  */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
@@ -358,12 +344,21 @@ async function executeFlow(flowAST: any): Promise<any> {
   export async function createUser(email: string, password: string): Promise<{ success: boolean; userId?: string; error?: string }> {
     try {
       const flowAST = createUserFlow(email, password);
-      const result = await executeFlow(flowAST);
+      const result = await runFlow(flowAST);
       
       // Extract userId from the flow execution result
       if (result.execution.status === 'success') {
         const createUserStep = result.execution.results['create-user'];
-        const userId = createUserStep?.output?.userId || `user-${Date.now()}`;
+        const userId = createUserStep?.output?.userId;
+        
+        if (!userId) {
+          console.error('User creation succeeded but no userId returned');
+          return { 
+            success: false, 
+            error: 'User creation failed: no userId returned' 
+          };
+        }
+        
         return { 
           success: true, 
           userId 
@@ -386,18 +381,26 @@ async function executeFlow(flowAST: any): Promise<any> {
   
   /**
    * Authenticate user using DSL flow
-   * Uses multiple auth flows: credentialsLogin for session-based, authenticate for general
+   * Uses credentialsLogin flow for session-based authentication
    */
   export async function authenticateUser(email: string, password: string): Promise<{ success: boolean; token?: string; userId?: string; error?: string }> {
     try {
-      // Try credentials login flow first (session-bound authentication)
+      // Use credentials login flow (session-bound authentication)
       const flowAST = credentialsLoginFlow(email, password);
-      const result = await executeFlow(flowAST);
+      const result = await runFlow(flowAST);
       
       if (result.execution.status === 'success') {
         const loginStep = result.execution.results['login'];
-        const userId = loginStep?.output?.userId || `user-${Date.now()}`;
-        const token = loginStep?.output?.successUrl || `token-${Date.now()}`;
+        const userId = loginStep?.output?.userId;
+        const token = loginStep?.output?.token || loginStep?.output?.sessionToken;
+        
+        if (!userId || !token) {
+          console.error('Authentication succeeded but missing userId or token');
+          return { 
+            success: false, 
+            error: 'Authentication failed: incomplete credentials' 
+          };
+        }
         
         return { 
           success: true, 
