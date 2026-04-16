@@ -3,7 +3,7 @@
  * @description Main home screen with featured carousel and app sections
  */
 
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,12 @@ import {
   TouchableOpacity,
   RefreshControl,
   FlatList,
-  Dimensions,
   TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useApp } from '../contexts/AppContext';
 import AppCard from '../../components/AppCard';
 import { MiniApp } from '../types';
-
-const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();

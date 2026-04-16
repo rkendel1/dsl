@@ -4,11 +4,6 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import HomeScreen from './HomeScreen';
-import TrendingScreen from './TrendingScreen';
-import CollectionsScreen from './CollectionsScreen';
-import MyAppsScreen from './MyAppsScreen';
-import ProfileScreen from './ProfileScreen';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
