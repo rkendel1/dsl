@@ -8,15 +8,39 @@ import {
   createUserFlow, 
   signUpUserFlow, 
   credentialsLoginFlow, 
-  authenticateUserFlow 
-} from '../flows/auth';
+  authenticateUserFlow,
+  miniappsListFlow 
+} from '../flows';
 
 /**
  * Fetch mini apps list using DSL flow
  */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
     try {
-      // Mock data for development; replace with real DSL flow when backend is connected
+      // Use the DSL flow to fetch mini apps
+      const flowAST = miniappsListFlow();
+      const result = await runFlow(flowAST);
+      
+      if (result.execution.status === 'success') {
+        // Extract apps from the flow execution result
+        const listAppsStep = result.execution.results['list-apps'];
+        const apps = listAppsStep?.output?.apps as MiniApp[] | undefined;
+        
+        if (!apps) {
+          console.error('Mini apps list succeeded but no apps returned');
+          return [];
+        }
+        
+        return apps;
+      } else {
+        // Get error from the first failed step
+        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+        console.error('Failed to fetch mini apps:', failedStep?.error || 'Unknown error');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching mini apps:', error);
+      // Fallback to mock data for development when backend is not available
       const mockMiniApps: MiniApp[] = [
         {
           id: '1',
@@ -311,9 +335,6 @@ import {
       ];
 
       return mockMiniApps;
-    } catch (error) {
-      console.error('Error fetching mini apps:', error);
-      return [];
     }
   }
   
