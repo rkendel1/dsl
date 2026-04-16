@@ -3,23 +3,26 @@
  * @description Handles all API calls to StackLive backend using @stacklive/sdk DSL flows
  */
 import { MiniApp } from '../types';
-import { runFlow } from '@stacklive/sdk';
+import { runFlow, flow, list } from '@stacklive/sdk';
 import { 
   createUserFlow, 
   signUpUserFlow, 
   credentialsLoginFlow, 
-  authenticateUserFlow,
-  miniappsListFlow 
+  authenticateUserFlow
 } from '../flows';
 
 /**
  * Fetch mini apps list using DSL flow
+ * Following the recommended pattern from SDK examples
  */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
     try {
-      // Use the DSL flow to fetch mini apps
-      const flowAST = miniappsListFlow();
-      const result = await runFlow(flowAST);
+      // Use the DSL flow to fetch mini apps (inline pattern as recommended)
+      const result = await runFlow(
+        flow('miniapps-list')
+          .step(list('miniapps', { id: 'list-apps' }))
+          .build()
+      );
       
       if (result.execution.status === 'success') {
         // Extract apps from the flow execution result

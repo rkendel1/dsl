@@ -4,7 +4,6 @@
  */
 
 import { list, flow } from '@stacklive/sdk';
-import { miniappsListFlow } from '../../flows/miniapps';
 
 /**
  * Test that miniapps list flow can be created and has the correct structure
@@ -18,12 +17,14 @@ export function verifyMiniAppsFlow() {
   }
   console.log('✅ list function is available');
   
-  // Test 2: Create the miniapps list flow
+  // Test 2: Create the miniapps list flow (inline pattern as recommended)
   try {
-    const flowAST = miniappsListFlow();
+    const flowAST = flow('miniapps-list')
+      .step(list('miniapps', { id: 'list-apps' }))
+      .build();
     
     if (!flowAST || typeof flowAST !== 'object') {
-      throw new Error('miniappsListFlow() did not return an object');
+      throw new Error('Flow builder did not return an object');
     }
     console.log('✅ Successfully created miniapps list flow');
     
