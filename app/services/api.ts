@@ -349,7 +349,7 @@ import {
       // Extract userId from the flow execution result
       if (result.execution.status === 'success') {
         const createUserStep = result.execution.results['create-user'];
-        const userId = createUserStep?.output?.userId;
+        const userId = createUserStep?.output?.userId as string | undefined;
         
         if (!userId) {
           console.error('User creation succeeded but no userId returned');
@@ -364,9 +364,11 @@ import {
           userId 
         };
       } else {
+        // Get error from the first failed step
+        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
         return { 
           success: false, 
-          error: result.execution.error || 'User creation failed' 
+          error: failedStep?.error || 'User creation failed' 
         };
       }
     } catch (error) {
@@ -391,8 +393,8 @@ import {
       
       if (result.execution.status === 'success') {
         const loginStep = result.execution.results['login'];
-        const userId = loginStep?.output?.userId;
-        const token = loginStep?.output?.token || loginStep?.output?.sessionToken;
+        const userId = loginStep?.output?.userId as string | undefined;
+        const token = (loginStep?.output?.token || loginStep?.output?.sessionToken) as string | undefined;
         
         if (!userId || !token) {
           console.error('Authentication succeeded but missing userId or token');
@@ -408,9 +410,11 @@ import {
           userId
         };
       } else {
+        // Get error from the first failed step
+        const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
         return { 
           success: false, 
-          error: result.execution.error || 'Authentication failed' 
+          error: failedStep?.error || 'Authentication failed' 
         };
       }
     } catch (error) {

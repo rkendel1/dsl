@@ -28,12 +28,13 @@ export async function exampleCreateUser() {
     const result = await runFlow(flowAST);
 
     if (result.execution.status === 'success') {
-      const userId = result.execution.results['create-user']?.output?.userId;
+      const userId = result.execution.results['create-user']?.output?.userId as string | undefined;
       console.log('User created successfully:', userId);
       return { success: true, userId };
     } else {
-      console.error('User creation failed:', result.execution.error);
-      return { success: false, error: result.execution.error };
+      const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+      console.error('User creation failed:', failedStep?.error);
+      return { success: false, error: failedStep?.error || 'User creation failed' };
     }
   } catch (error) {
     console.error('Flow execution error:', error);
@@ -60,14 +61,15 @@ export async function exampleSignUpUser() {
 
     if (result.execution.status === 'success') {
       const registerStep = result.execution.results['register'];
-      const userId = registerStep?.output?.userId;
-      const successUrl = registerStep?.output?.successUrl;
+      const userId = registerStep?.output?.userId as string | undefined;
+      const successUrl = registerStep?.output?.successUrl as string | undefined;
 
       console.log('User signed up successfully:', { userId, successUrl });
       return { success: true, userId, successUrl };
     } else {
-      console.error('Sign up failed:', result.execution.error);
-      return { success: false, error: result.execution.error };
+      const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+      console.error('Sign up failed:', failedStep?.error);
+      return { success: false, error: failedStep?.error || 'Sign up failed' };
     }
   } catch (error) {
     console.error('Flow execution error:', error);
@@ -93,14 +95,15 @@ export async function exampleCredentialsLogin() {
 
     if (result.execution.status === 'success') {
       const loginStep = result.execution.results['login'];
-      const userId = loginStep?.output?.userId;
-      const successUrl = loginStep?.output?.successUrl || '/dashboard';
+      const userId = loginStep?.output?.userId as string | undefined;
+      const successUrl = (loginStep?.output?.successUrl as string | undefined) || '/dashboard';
 
       console.log('Login successful:', { userId, successUrl });
       return { success: true, userId, token: sessionToken };
     } else {
-      console.error('Login failed:', result.execution.error);
-      return { success: false, error: result.execution.error };
+      const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+      console.error('Login failed:', failedStep?.error);
+      return { success: false, error: failedStep?.error || 'Login failed' };
     }
   } catch (error) {
     console.error('Flow execution error:', error);
@@ -126,13 +129,14 @@ export async function exampleAuthenticateUser() {
 
     if (result.execution.status === 'success') {
       const authStep = result.execution.results['authenticate'];
-      const userId = authStep?.output?.userId;
+      const userId = authStep?.output?.userId as string | undefined;
 
       console.log('Authentication successful:', { userId });
       return { success: true, userId };
     } else {
-      console.error('Authentication failed:', result.execution.error);
-      return { success: false, error: result.execution.error };
+      const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
+      console.error('Authentication failed:', failedStep?.error);
+      return { success: false, error: failedStep?.error || 'Authentication failed' };
     }
   } catch (error) {
     console.error('Flow execution error:', error);
