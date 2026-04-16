@@ -15,7 +15,9 @@ export default function SplashScreen() {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim]);
+    // fadeAnim is stable because it's from useRef, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View style={styles.container}>

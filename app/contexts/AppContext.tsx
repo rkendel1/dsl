@@ -363,7 +363,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [userId, isAuthenticated, loadFavorites]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isAuthenticated]);
 
   const toggleFavorite = async (appId: string) => {
     if (!userId || !isAuthenticated) {
