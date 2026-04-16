@@ -23,14 +23,17 @@ function RootLayoutNav() {
 
   const checkAndRoute = useCallback(async () => {
     setChecked(true);
-    await ExpoSplashScreen.hideAsync();
-
+    
     try {
+      // Hide splash screen after a small delay to ensure smooth transition
+      setTimeout(async () => {
+        await ExpoSplashScreen.hideAsync().catch(() => {});
+      }, 100);
+
       const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
       if (firstLaunch) {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
         router.replace({ pathname: '/OnboardingScreen' });
-        await AsyncStorage.setItem('firstLaunch', 'false');
       } else if (!isAuthenticated) {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
         router.replace({ pathname: '/AuthScreen' });
