@@ -82,8 +82,6 @@ export default function AppDetailScreen() {
     }
   }, [appId, fetchAppDetail]);
 
-
-
   const handleInstall = async () => {
     if (!app) return;
 

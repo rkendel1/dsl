@@ -363,6 +363,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
+    // loadFavorites is intentionally omitted to prevent circular dependency
+    // loadFavorites is called within loadApps, but should not trigger loadApps re-creation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isAuthenticated]);
 
