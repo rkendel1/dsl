@@ -26,9 +26,13 @@ function RootLayoutNav() {
     
     try {
       // Hide splash screen after a small delay to ensure smooth transition
-      setTimeout(async () => {
-        await ExpoSplashScreen.hideAsync().catch(() => {});
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      try {
+        await ExpoSplashScreen.hideAsync();
+      } catch (error) {
+        // Splash screen may already be hidden, log but continue
+        console.log('Splash screen hide error (non-critical):', error);
+      }
 
       const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
       if (firstLaunch) {
