@@ -3,55 +3,20 @@
  * @description Main home screen showing featured mini apps
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
-
-interface MiniApp {
-  id: string;
-  name: string;
-  description: string;
-  rating: number;
-}
-
-const mockApps: MiniApp[] = [
-  {
-    id: '1',
-    name: 'Featured Calculator',
-    description: 'A simple calculator app',
-    rating: 4.8,
-  },
-  {
-    id: '2',
-    name: 'New Weather App',
-    description: 'Check the weather anywhere',
-    rating: 4.2,
-  },
-  {
-    id: '3',
-    name: 'Trending Notes',
-    description: 'Take notes on the go',
-    rating: 4.9,
-  },
-  {
-    id: '4',
-    name: 'Todo List',
-    description: 'Manage your tasks',
-    rating: 4.5,
-  },
-];
+import { useApp } from '../contexts/AppContext';
+import { MiniApp } from '../types';
 
 export default function HomeScreen() {
-  const [apps, setApps] = useState<MiniApp[]>([]);
-
-  useEffect(() => {
-    setApps(mockApps);
-  }, []);
+  const { featuredApps, loading, error } = useApp();
 
   const renderApp = ({ item }: { item: MiniApp }) => (
     <TouchableOpacity style={styles.appCard}>
@@ -61,11 +26,28 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text style={styles.loadingText}>Loading apps...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Featured Apps</Text>
       <FlatList
-        data={apps}
+        data={featuredApps}
         renderItem={renderApp}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
@@ -124,5 +106,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#6B7280',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#EF4444',
+    textAlign: 'center',
   },
 });
