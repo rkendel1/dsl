@@ -2,14 +2,12 @@
  * @file API Service
  * @description Handles all API calls to StackLive backend using @stacklive/sdk DSL flows
  */
-import { MiniApp } from '../types';
-import { runFlow, flow, list } from '@stacklive/sdk';
-import { 
-  createUserFlow, 
-  signUpUserFlow, 
-  credentialsLoginFlow, 
-  authenticateUserFlow
+import { flow, list, runFlow } from '@stacklive/sdk';
+import {
+  createUserFlow,
+  credentialsLoginFlow,
 } from '../flows';
+import { MiniApp } from '../types';
 
 /**
  * Fetch mini apps list using DSL flow
