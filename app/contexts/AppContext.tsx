@@ -363,8 +363,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-    // loadFavorites is intentionally omitted to prevent circular dependency
-    // loadFavorites is called within loadApps, but should not trigger loadApps re-creation
+    // loadFavorites is intentionally omitted from dependencies to prevent circular dependency:
+    // - loadFavorites depends on userId
+    // - loadApps depends on userId, isAuthenticated, and calls loadFavorites (line 357)
+    // - Including loadFavorites would cause unnecessary re-renders when loadFavorites changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isAuthenticated]);
 
