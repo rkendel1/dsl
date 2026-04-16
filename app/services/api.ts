@@ -4,43 +4,22 @@
  */
 import { MiniApp } from '../types';
 
-const runtime = {
-    execute: async () => {
-      throw new Error('Kernel not connected in mobile runtime')
-    }
-  };
-  // Create a single runtime instance shared across all flows
- // const runtime = createFlowRuntime();
- // registerAllCapabilities(runtime);
-  
-  /**
-   * Execute a DSL flow using the SDK
-   */
-//  async function executeFlow(flowDefinition: any): Promise<FlowExecutionWithUI> {
- //   const ast = flowDefinition.build();
-  //  const compiledFlow = compile(ast);
-  //  return runtime.execute(compiledFlow);
- // }
-  async function executeFlow(flowDefinition: any): Promise<any> {
-    // Mock successful execution for development; replace with real runtime
-    return {
-      execution: {
-        status: 'success' as const,
-        flowId: flowDefinition?.id || 'mock-flow',
-        executedAt: Date.now(),
-        results: {}
-      },
-      ui: {
-        type: 'success',
-        summary: { status: 'success', title: 'Mock execution' },
-        sections: [],
-        primaryAction: { label: 'OK', type: 'confirm' }
-      }
-    };
-  }
-  /**
-   * Fetch mini apps list using DSL flow
-   */
+// Create a single runtime instance shared across all flows
+// const runtime = createFlowRuntime();
+// registerAllCapabilities(runtime);
+
+/**
+ * Execute a DSL flow using the SDK
+ */
+// async function executeFlow(flowDefinition: any): Promise<FlowExecutionWithUI> {
+//   const ast = flowDefinition.build();
+//   const compiledFlow = compile(ast);
+//   return runtime.execute(compiledFlow);
+// }
+
+/**
+ * Fetch mini apps list using DSL flow
+ */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
     try {
       // Mock data for development; replace with real DSL flow when backend is connected

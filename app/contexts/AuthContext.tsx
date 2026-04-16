@@ -35,11 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAuthState();
-  }, []);
-
-  const loadAuthState = async () => {
+  const loadAuthState = React.useCallback(async () => {
     try {
       const token = await getUserToken();
       const id = await getUserId();
@@ -55,7 +51,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadAuthState();
+  }, [loadAuthState]);
 
   const loadUserProfile = async (id: string) => {
     try {

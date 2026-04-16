@@ -332,7 +332,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadApps = async () => {
+  const loadFavorites = React.useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const result = await getUserFavorites(userId);
+      if (result.success && result.favorites) {
+        setFavorites(result.favorites);
+      }
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+    }
+  }, [userId]);
+
+  const loadApps = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -350,20 +363,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadFavorites = async () => {
-    if (!userId) return;
-    
-    try {
-      const result = await getUserFavorites(userId);
-      if (result.success && result.favorites) {
-        setFavorites(result.favorites);
-      }
-    } catch (err) {
-      console.error('Error loading favorites:', err);
-    }
-  };
+    // loadFavorites is intentionally omitted from dependencies to prevent circular dependency:
+    // - loadFavorites depends on userId
+    // - loadApps depends on userId, isAuthenticated, and calls loadFavorites (line 357)
+    // - Including loadFavorites would cause unnecessary re-renders when loadFavorites changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isAuthenticated]);
 
   const toggleFavorite = async (appId: string) => {
     if (!userId || !isAuthenticated) {
@@ -396,7 +401,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadApps();
-  }, []);
+  }, [loadApps]);
 
   // Reload favorites when user logs in/out
   useEffect(() => {
@@ -405,7 +410,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       setFavorites([]);
     }
-  }, [userId, isAuthenticated]);
+  }, [userId, isAuthenticated, loadFavorites]);
 
   const featuredApps = getFeaturedApps(apps);
   const newThisWeekApps = getNewThisWeekApps(apps);

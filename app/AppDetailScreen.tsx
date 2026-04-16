@@ -3,7 +3,7 @@
  * @description Detailed view of a specific app
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -39,18 +39,12 @@ interface App {
 export default function AppDetailScreen() {
   const { appId } = useLocalSearchParams<{ appId: string }>();
   const router = useRouter();
-  const { userProfile, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [app, setApp] = useState<App | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (appId) {
-      fetchAppDetail();
-    }
-  }, [appId]);
-
-  const fetchAppDetail = async () => {
+  const fetchAppDetail = useCallback(async () => {
     try {
       setLoading(true);
       const appsResponse = await api.fetchMiniApps();
@@ -75,12 +69,18 @@ export default function AppDetailScreen() {
       } else {
         setError('App not found');
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [appId]);
+
+  useEffect(() => {
+    if (appId) {
+      fetchAppDetail();
+    }
+  }, [appId, fetchAppDetail]);
 
   const handleInstall = async () => {
     if (!app) return;
@@ -104,7 +104,7 @@ export default function AppDetailScreen() {
         'Success',
         isCurrentlyInstalled ? 'App uninstalled' : 'App installed successfully'
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Something went wrong');
     }
   };

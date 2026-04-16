@@ -48,7 +48,7 @@ export default function AuthScreen() {
       } else {
         Alert.alert('Error', result.error || 'Authentication failed');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Something went wrong');
     } finally {
       setLoading(false);
