@@ -13,6 +13,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Delay before hiding splash screen to ensure smooth transition
+// 100ms provides enough time for the navigation stack to initialize without noticeable delay
 const SPLASH_TRANSITION_DELAY_MS = 100;
 
 /**
@@ -43,7 +44,8 @@ function RootLayoutNav() {
 
     try {
       // NOTE: firstLaunch flag is set to 'false' in OnboardingScreen when user completes onboarding.
-      // If user hasn't completed onboarding yet, they will see it again on next launch.
+      // Edge case: If user closes app during onboarding without completing, they'll see it again.
+      // This is intentional UX - users should complete onboarding or explicitly skip it.
       const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
       if (firstLaunch) {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
