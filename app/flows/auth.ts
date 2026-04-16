@@ -99,3 +99,5 @@ export const authenticateUserFlow = (email: string, password: string, actorType:
       })
     )
     .build();
+
+export default () => null;

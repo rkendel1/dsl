@@ -172,3 +172,5 @@ export function useAuthFlows() {
 
   return { signup, login };
 }
+
+export default () => null;
