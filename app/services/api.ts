@@ -10,161 +10,8 @@ import {
 import { MiniApp } from '../types';
 
 /**
- * Mock mini apps data for development fallback
- * Used when backend is unavailable or DSL execution fails
- */
-const mockMiniApps: MiniApp[] = [
-  {
-    id: '1',
-    name: 'Featured Calculator',
-    description: 'A powerful calculator with advanced features',
-    launch_url: 'https://example.com/calculator',
-    icon: 'Calculator',
-    icon_type: 'lucide',
-    icon_url: null,
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    primary_color: '#667eea',
-    secondary_color: '#764ba2',
-    categories: ['Productivity', 'Tools'],
-    rating: 4.5,
-    reviews: 1250,
-    creator_id: 'creator-1',
-    creator_email: 'dev@example.com',
-    status: 'published',
-    deployment_url: 'https://example.com/calculator',
-    last_deployed_at: new Date().toISOString(),
-    last_published_at: new Date().toISOString(),
-    is_featured: true,
-    is_new_this_week: false,
-    is_trending: false,
-    long_description: 'A feature-rich calculator app with scientific functions, history, and more.',
-    tags: ['calculator', 'math', 'productivity'],
-    screenshots: [],
-    features: ['Scientific calculations', 'History', 'Dark mode'],
-    ratings_and_reviews: null,
-  },
-  {
-    id: '2',
-    name: 'New Task Manager',
-    description: 'Organize your tasks and boost productivity',
-    launch_url: 'https://example.com/tasks',
-    icon: 'CheckSquare',
-    icon_type: 'lucide',
-    icon_url: null,
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    primary_color: '#f093fb',
-    secondary_color: '#f5576c',
-    categories: ['Productivity'],
-    rating: 4.7,
-    reviews: 890,
-    creator_id: 'creator-2',
-    creator_email: 'dev@example.com',
-    status: 'published',
-    deployment_url: 'https://example.com/tasks',
-    last_deployed_at: new Date().toISOString(),
-    last_published_at: new Date().toISOString(),
-    is_featured: false,
-    is_new_this_week: true,
-    is_trending: false,
-    long_description: 'Manage your daily tasks efficiently with our intuitive task manager.',
-    tags: ['tasks', 'productivity', 'organization'],
-    screenshots: [],
-    features: ['Task lists', 'Reminders', 'Priority levels'],
-    ratings_and_reviews: null,
-  },
-  {
-    id: '3',
-    name: 'Trending Notes',
-    description: 'Quick and easy note-taking app',
-    launch_url: 'https://example.com/notes',
-    icon: 'FileText',
-    icon_type: 'lucide',
-    icon_url: null,
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    primary_color: '#4facfe',
-    secondary_color: '#00f2fe',
-    categories: ['Productivity', 'Tools'],
-    rating: 4.3,
-    reviews: 567,
-    creator_id: 'creator-3',
-    creator_email: 'dev@example.com',
-    status: 'published',
-    deployment_url: 'https://example.com/notes',
-    last_deployed_at: new Date().toISOString(),
-    last_published_at: new Date().toISOString(),
-    is_featured: true,
-    is_new_this_week: false,
-    is_trending: true,
-    long_description: 'A simple yet powerful note-taking application for all your needs.',
-    tags: ['notes', 'writing', 'productivity'],
-    screenshots: [],
-    features: ['Rich text editing', 'Cloud sync', 'Search'],
-    ratings_and_reviews: null,
-  },
-  {
-    id: '4',
-    name: 'Weather Forecast',
-    description: 'Get accurate weather forecasts',
-    launch_url: 'https://example.com/weather',
-    icon: 'Cloud',
-    icon_type: 'lucide',
-    icon_url: null,
-    gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    primary_color: '#a8edea',
-    secondary_color: '#fed6e3',
-    categories: ['Weather', 'Lifestyle'],
-    rating: 4.6,
-    reviews: 2340,
-    creator_id: 'creator-4',
-    creator_email: 'dev@example.com',
-    status: 'published',
-    deployment_url: 'https://example.com/weather',
-    last_deployed_at: new Date().toISOString(),
-    last_published_at: new Date().toISOString(),
-    is_featured: false,
-    is_new_this_week: true,
-    is_trending: true,
-    long_description: 'Stay prepared with detailed weather forecasts and alerts.',
-    tags: ['weather', 'forecast', 'alerts'],
-    screenshots: [],
-    features: ['7-day forecast', 'Hourly updates', 'Weather alerts'],
-    ratings_and_reviews: null,
-  },
-  {
-    id: '5',
-    name: 'Fitness Tracker',
-    description: 'Track your fitness journey',
-    launch_url: 'https://example.com/fitness',
-    icon: 'Activity',
-    icon_type: 'lucide',
-    icon_url: null,
-    gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    primary_color: '#fa709a',
-    secondary_color: '#fee140',
-    categories: ['Health', 'Fitness'],
-    rating: 4.8,
-    reviews: 1890,
-    creator_id: 'creator-5',
-    creator_email: 'dev@example.com',
-    status: 'published',
-    deployment_url: 'https://example.com/fitness',
-    last_deployed_at: new Date().toISOString(),
-    last_published_at: new Date().toISOString(),
-    is_featured: true,
-    is_new_this_week: false,
-    is_trending: true,
-    long_description: 'Track workouts, calories, and achieve your fitness goals.',
-    tags: ['fitness', 'health', 'workout'],
-    screenshots: [],
-    features: ['Workout tracking', 'Calorie counter', 'Progress charts'],
-    ratings_and_reviews: null,
-  },
-];
-
-/**
  * Fetch mini apps list using DSL flow
  * Following the recommended pattern from SDK examples
- * Falls back to mock data for development when backend is unavailable
  */
   export async function fetchMiniApps(): Promise<MiniApp[]> {
     try {
@@ -180,22 +27,21 @@ const mockMiniApps: MiniApp[] = [
         const listAppsStep = result.execution.results['list-apps'];
         const apps = listAppsStep?.output?.apps as MiniApp[] | undefined;
         
-        if (!apps || apps.length === 0) {
-          console.warn('Mini apps list succeeded but no apps returned, using mock data');
-          return mockMiniApps;
+        if (!apps) {
+          console.error('Mini apps list succeeded but no apps returned');
+          return [];
         }
         
         return apps;
       } else {
         // Get error from the first failed step
         const failedStep = Object.values(result.execution.results).find(step => step.status === 'error');
-        console.warn('Failed to fetch mini apps, using mock data:', failedStep?.error || 'Unknown error');
-        return mockMiniApps;
+        console.error('Failed to fetch mini apps:', failedStep?.error || 'Unknown error');
+        return [];
       }
     } catch (error) {
-      console.warn('Error fetching mini apps, using mock data:', error);
-      // Fallback to mock data for development when backend is not available
-      return mockMiniApps;
+      console.error('Error fetching mini apps:', error);
+      throw error;
     }
   }
   
