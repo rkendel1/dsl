@@ -3,14 +3,11 @@
  * @description Initial splash screen with StackLive branding
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Image, Animated } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SplashScreen as ExpoSplashScreen } from 'expo-router';
 
 export default function SplashScreen() {
-  const router = useRouter();
-  const fadeAnim = new Animated.Value(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -18,7 +15,7 @@ export default function SplashScreen() {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   return (
     <View style={styles.container}>

@@ -4,56 +4,52 @@
  */
 
 import { Stack, useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
 import CustomSplashScreen from './SplashScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import OnboardingScreen from './OnboardingScreen';
-import AuthScreen from './AuthScreen';
-import AppDetailScreen from './AppDetailScreen';
-import AppWebViewScreen from './AppWebViewScreen';
 
 function RootLayoutNav() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const [firstLaunch, setFirstLaunch] = useState(true);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     ExpoSplashScreen.preventAutoHideAsync();
   }, []);
 
-  useEffect(() => {
-    if (loading) return;
-    const checkAndRoute = async () => {
-      setChecked(true);
-      await ExpoSplashScreen.hideAsync();
+  const checkAndRoute = useCallback(async () => {
+    setChecked(true);
+    await ExpoSplashScreen.hideAsync();
 
-      try {
-        const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
-        if (firstLaunch) {
-          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
-          router.replace({ pathname: '/OnboardingScreen' });
-          await AsyncStorage.setItem('firstLaunch', 'false');
-        } else if (!isAuthenticated) {
-          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
-          router.replace({ pathname: '/AuthScreen' });
-        } else {
-          // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
-          router.replace({ pathname: '/(tabs)' });
-        }
-      } catch (error) {
-        console.error('Error checking first launch:', error);
-        // Fallback to tabs
+    try {
+      const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
+      if (firstLaunch) {
+        // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+        router.replace({ pathname: '/OnboardingScreen' });
+        await AsyncStorage.setItem('firstLaunch', 'false');
+      } else if (!isAuthenticated) {
+        // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+        router.replace({ pathname: '/AuthScreen' });
+      } else {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
         router.replace({ pathname: '/(tabs)' });
       }
-    };
+    } catch (error) {
+      console.error('Error checking first launch:', error);
+      // Fallback to tabs
+      // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
+      router.replace({ pathname: '/(tabs)' });
+    }
+  }, [router, isAuthenticated]);
+
+  useEffect(() => {
+    if (loading) return;
     checkAndRoute();
-  }, [loading, isAuthenticated]);
+  }, [loading, checkAndRoute]);
   if (loading || !checked) {
     return <CustomSplashScreen />;
   }

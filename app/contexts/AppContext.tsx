@@ -332,7 +332,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadApps = async () => {
+  const loadFavorites = React.useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const result = await getUserFavorites(userId);
+      if (result.success && result.favorites) {
+        setFavorites(result.favorites);
+      }
+    } catch (err) {
+      console.error('Error loading favorites:', err);
+    }
+  }, [userId]);
+
+  const loadApps = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -350,20 +363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadFavorites = async () => {
-    if (!userId) return;
-    
-    try {
-      const result = await getUserFavorites(userId);
-      if (result.success && result.favorites) {
-        setFavorites(result.favorites);
-      }
-    } catch (err) {
-      console.error('Error loading favorites:', err);
-    }
-  };
+  }, [userId, isAuthenticated, loadFavorites]);
 
   const toggleFavorite = async (appId: string) => {
     if (!userId || !isAuthenticated) {
@@ -396,7 +396,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadApps();
-  }, []);
+  }, [loadApps]);
 
   // Reload favorites when user logs in/out
   useEffect(() => {
@@ -405,7 +405,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       setFavorites([]);
     }
-  }, [userId, isAuthenticated]);
+  }, [userId, isAuthenticated, loadFavorites]);
 
   const featuredApps = getFeaturedApps(apps);
   const newThisWeekApps = getNewThisWeekApps(apps);
