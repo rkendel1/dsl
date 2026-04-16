@@ -12,6 +12,9 @@ import CustomSplashScreen from './SplashScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Delay before hiding splash screen to ensure smooth transition
+const SPLASH_TRANSITION_DELAY_MS = 100;
+
 function RootLayoutNav() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -24,16 +27,16 @@ function RootLayoutNav() {
   const checkAndRoute = useCallback(async () => {
     setChecked(true);
     
+    // Hide splash screen after a small delay to ensure smooth transition
+    await new Promise(resolve => setTimeout(resolve, SPLASH_TRANSITION_DELAY_MS));
     try {
-      // Hide splash screen after a small delay to ensure smooth transition
-      await new Promise(resolve => setTimeout(resolve, 100));
-      try {
-        await ExpoSplashScreen.hideAsync();
-      } catch (error) {
-        // Splash screen may already be hidden, log but continue
-        console.log('Splash screen hide error (non-critical):', error);
-      }
+      await ExpoSplashScreen.hideAsync();
+    } catch (error) {
+      // Splash screen may already be hidden, log but continue
+      console.log('Splash screen hide error (non-critical):', error);
+    }
 
+    try {
       const firstLaunch = await AsyncStorage.getItem('firstLaunch') !== 'false';
       if (firstLaunch) {
         // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
