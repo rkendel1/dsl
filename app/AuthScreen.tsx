@@ -20,7 +20,7 @@ import { useAuth } from './contexts/AuthContext';
 
 export default function AuthScreen() {
   const router = useRouter();
-  const { login, signup, skipLogin } = useAuth();
+  const { login, signup } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,12 +54,6 @@ export default function AuthScreen() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSkip = async () => {
-    await skipLogin();
-    // @ts-ignore - Expo Router type doesn't include group paths, but runtime works
-    router.replace({ pathname: '/(tabs)' });
   };
 
   return (
@@ -119,10 +113,6 @@ export default function AuthScreen() {
                 ? 'Already have an account? Log In'
                 : "Don't have an account? Sign Up"}
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip} disabled={loading}>
-            <Text style={styles.skipText}>Skip for now</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -185,14 +175,6 @@ const styles = StyleSheet.create({
   },
   switchText: {
     color: '#6366F1',
-    fontSize: 16,
-  },
-  skipButton: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  skipText: {
-    color: '#9CA3AF',
     fontSize: 16,
   },
 });

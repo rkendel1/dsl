@@ -3,6 +3,9 @@
  * @description StackLive Native Mobile App - Mini App Store
  */
 
+// Import polyfills FIRST - before any other imports
+import './polyfills';
+
 import { Stack, useRouter } from 'expo-router';
 import React, { useState, useEffect, useCallback } from 'react';
 import * as ExpoSplashScreen from 'expo-splash-screen';
