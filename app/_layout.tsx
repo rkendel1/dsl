@@ -15,6 +15,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Delay before hiding splash screen to ensure smooth transition
 const SPLASH_TRANSITION_DELAY_MS = 100;
 
+/**
+ * Delays execution for a specified number of milliseconds
+ */
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 function RootLayoutNav() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -28,12 +33,12 @@ function RootLayoutNav() {
     setChecked(true);
     
     // Hide splash screen after a small delay to ensure smooth transition
-    await new Promise(resolve => setTimeout(resolve, SPLASH_TRANSITION_DELAY_MS));
+    await delay(SPLASH_TRANSITION_DELAY_MS);
     try {
       await ExpoSplashScreen.hideAsync();
     } catch (error) {
       // Splash screen already hidden or hide operation failed (safe to ignore)
-      console.log('Splash screen already hidden or hide operation failed (safe to ignore):', error);
+      console.warn('Splash screen already hidden or hide operation failed (safe to ignore):', error);
     }
 
     try {
