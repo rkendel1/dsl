@@ -17,7 +17,7 @@ export default function TabLayout() {
           tabBarLabelStyle: { fontSize: 10 },
         }}>
       <Tabs.Screen
-        name="HomeScreen"
+        name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
@@ -49,12 +49,6 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null, // Hide from tabs
         }}
       />
       <Tabs.Screen
