@@ -1,9 +1,9 @@
 /**
  * Metro configuration for React Native
  * 
- * @stacklive/sdk v0.1.6+ includes dual builds (ESM + CommonJS) and
- * proper React Native support via conditional exports. Metro can now
- * resolve the SDK without special configuration.
+ * @stacklive/sdk v0.1.6+ no longer bundles node-forge and does not require
+ * crypto polyfills or shims. The SDK now works seamlessly with React Native
+ * via dual builds (ESM + CommonJS) and proper conditional exports.
  *
  * We enable package exports to support modern packages with conditional exports.
  */
