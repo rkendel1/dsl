@@ -9,10 +9,19 @@
  */
 
 const { getDefaultConfig } = require('expo/metro-config');
+const nodeLibs = require('node-libs-react-native');
 
 const config = getDefaultConfig(__dirname);
 
 // Enable package.json "exports" field resolution for modern npm packages
 config.resolver.unstable_enablePackageExports = true;
+
+// Resolve Node.js core modules for React Native
+// This allows @stacklive/sdk to import 'crypto' and other Node modules
+config.resolver.extraNodeModules = {
+  ...nodeLibs,
+  // Ensure crypto resolves to react-native-crypto
+  crypto: require.resolve('react-native-crypto'),
+};
 
 module.exports = config;
