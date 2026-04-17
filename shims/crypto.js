@@ -8,7 +8,8 @@
  */
 
 // Ensure react-native-get-random-values polyfill is loaded
-import 'react-native-get-random-values';
+// Using require for consistency with the rest of the file (CommonJS module)
+require('react-native-get-random-values');
 
 // Use crypto-browserify modules but with our polyfilled crypto.getRandomValues
 const createHash = require('create-hash');
