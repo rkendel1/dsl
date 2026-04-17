@@ -18,10 +18,6 @@ config.resolver.unstable_enablePackageExports = true;
 
 // Resolve Node.js core modules for React Native
 // This allows @stacklive/sdk to import 'crypto' and other Node modules
-config.resolver.extraNodeModules = {
-  ...nodeLibs,
-  // Ensure crypto resolves to react-native-crypto
-  crypto: require.resolve('react-native-crypto'),
-};
+config.resolver.extraNodeModules = nodeLibs;
 
 module.exports = config;
