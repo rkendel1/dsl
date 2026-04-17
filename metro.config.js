@@ -10,6 +10,7 @@
 
 const { getDefaultConfig } = require('expo/metro-config');
 const nodeLibs = require('node-libs-react-native');
+const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
@@ -17,7 +18,11 @@ const config = getDefaultConfig(__dirname);
 config.resolver.unstable_enablePackageExports = true;
 
 // Resolve Node.js core modules for React Native
-// This allows @stacklive/sdk to import 'crypto' and other Node modules
-config.resolver.extraNodeModules = nodeLibs;
+// Use our custom crypto shim instead of react-native-crypto to avoid
+// the problematic react-native-randombytes native module dependency
+config.resolver.extraNodeModules = {
+  ...nodeLibs,
+  crypto: path.resolve(__dirname, 'shims/crypto.js'),
+};
 
 module.exports = config;

@@ -14,6 +14,12 @@ import 'react-native-get-random-values';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const process = require('process');
 
+// Polyfill Buffer globally if not already available
+if (typeof global.Buffer === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  global.Buffer = require('buffer').Buffer;
+}
+
 // Check if we're in development mode (React Native global)
 // @ts-expect-error - __DEV__ is a global in React Native without type definitions
 const isDevelopment = typeof __DEV__ !== 'undefined' && __DEV__;
