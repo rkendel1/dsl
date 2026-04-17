@@ -14,6 +14,10 @@ import 'react-native-get-random-values';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const process = require('process');
 
+// Check if we're in development mode (React Native global)
+// @ts-ignore - __DEV__ is a global in React Native
+const isDevelopment = typeof __DEV__ !== 'undefined' && __DEV__;
+
 // Polyfill global process if needed
 if (typeof global.process === 'undefined') {
   global.process = process;
@@ -27,17 +31,17 @@ if (global.process && !global.process.env) {
 // Set SDK mode and environment
 if (global.process && global.process.env) {
   global.process.env.SDK_MODE = 'true';
-  // @ts-ignore - __DEV__ is a global in React Native
-  global.process.env.NODE_ENV = (typeof __DEV__ !== 'undefined' && __DEV__) ? 'development' : 'production';
+  global.process.env.NODE_ENV = isDevelopment ? 'development' : 'production';
 }
 
 // Log that polyfills are set up (only in development)
-// @ts-ignore - __DEV__ is a global in React Native
-if (typeof __DEV__ !== 'undefined' && __DEV__) {
+if (isDevelopment) {
   console.log('✅ React Native polyfills configured for @stacklive/sdk');
 }
 
-// Export so it can be imported early in the app
+// Export a no-op function for backwards compatibility
+// Some code may still call this explicitly, though it's not necessary
+// since initialization happens at module load time
 export default function setupPolyfills() {
   // Already set up at module load time
 }
