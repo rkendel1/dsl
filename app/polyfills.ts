@@ -15,7 +15,7 @@ import 'react-native-get-random-values';
 const process = require('process');
 
 // Check if we're in development mode (React Native global)
-// @ts-ignore - __DEV__ is a global in React Native
+// @ts-expect-error - __DEV__ is a global in React Native without type definitions
 const isDevelopment = typeof __DEV__ !== 'undefined' && __DEV__;
 
 // Polyfill global process if needed
