@@ -1,8 +1,8 @@
-# Welcome to your Expo app 👋
+# StackLive DSL - React Native Reference Implementation 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native app demonstrating how to use the `@stacklive/sdk` DSL for building portable, identity-aware experiences.
 
-## Get started
+## 🚀 Quick Start
 
 1. Install dependencies
 
@@ -16,35 +16,73 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+3. Open in your preferred platform
+   - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+   - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+   - [Expo Go](https://expo.dev/go)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 📚 Documentation
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Setup & Configuration
+- **[BEFORE_AFTER.md](BEFORE_AFTER.md)** - Visual comparison of the SDK initialization fix
+- **[SDK_SETUP_FIX.md](SDK_SETUP_FIX.md)** - Technical details of SDK polyfills setup
+- **[FIX_SUMMARY.md](FIX_SUMMARY.md)** - Comprehensive fix summary with metrics
+- **[REACT_NATIVE_FIX.md](REACT_NATIVE_FIX.md)** - General React Native setup guide
 
-## Get a fresh project
+### DSL Usage
+- **[DSL_FLOWS.md](DSL_FLOWS.md)** - How to create and use DSL flows
+- **[AUTH_QUICK_REFERENCE.md](AUTH_QUICK_REFERENCE.md)** - Authentication flow examples
+- **[IMPLEMENTATION_MINIAPPS.md](IMPLEMENTATION_MINIAPPS.md)** - Mini apps implementation guide
 
-When you're ready, run:
+## 🎯 Key Features
 
-```bash
-npm run reset-project
+- ✅ **SDK Integration**: Properly configured `@stacklive/sdk` with React Native polyfills
+- ✅ **DSL Flows**: Authentication, mini apps, and other capabilities via DSL
+- ✅ **Type Safety**: Full TypeScript support with type-safe DSL
+- ✅ **Clean Architecture**: Separation of concerns with flows, services, and contexts
+
+## 🏗️ Project Structure
+
+```
+project/
+├── index.js              # Custom entry point (loads polyfills first)
+├── app/
+│   ├── polyfills.ts     # React Native polyfills for SDK
+│   ├── _layout.tsx      # App layout with providers
+│   ├── (tabs)/          # Tab navigation screens
+│   ├── flows/           # DSL flow definitions
+│   ├── services/        # API services using DSL
+│   └── contexts/        # React contexts
+└── components/          # Reusable UI components
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🔧 How It Works
 
-## Learn more
+This app uses a custom entry point (`index.js`) to ensure that React Native polyfills are loaded before the SDK:
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+index.js → polyfills.ts → expo-router/entry → app
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This guarantees that crypto and process globals are available when the SDK initializes.
 
-## Join the community
+## 📖 Learn More
 
-Join our community of developers creating universal apps.
+### About Expo
+- [Expo documentation](https://docs.expo.dev/)
+- [Expo tutorial](https://docs.expo.dev/tutorial/introduction/)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### About StackLive SDK
+- Check the documentation files in this repository
+- See `app/flows/` for DSL flow examples
+- See `app/services/api.ts` for SDK usage patterns
+
+## 🤝 Community
+
+- [Expo on GitHub](https://github.com/expo/expo)
+- [Discord community](https://chat.expo.dev)
+
+---
+
+**Status:** ✅ Fully functional with SDK v0.1.5+  
+**Last Updated:** 2026-04-17
